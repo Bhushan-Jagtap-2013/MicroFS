@@ -86,9 +86,11 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
                 ret = -ENOMEM;
                 goto release_msbi;
         }
+	printk(KERN_EMERG "MicroFS : HERE 1");
 	return 0;
 
 release_msbi:
+	printk(KERN_EMERG "MicroFS : HERE 2");
 	kfree(msbi);
 
 release_bh:
@@ -97,8 +99,10 @@ release_bh:
 	 * ToDo: release bh when file system is unmounted.
 	 */
 
+	printk(KERN_EMERG "MicroFS : HERE 3");
 	brelse(bh);
 
 failed:
+	printk(KERN_EMERG "MicroFS : HERE 4");
 	return ret;
 }

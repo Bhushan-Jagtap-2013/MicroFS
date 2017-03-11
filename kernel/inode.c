@@ -1,6 +1,7 @@
 #include <linux/fs.h>
 #include <linux/buffer_head.h>
 #include <linux/slab.h>
+#include <linux/stat.h>
 #include "../mfs.h"
 
 /*
@@ -51,6 +52,10 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	/*
 	 * ToDo : Copy content to in-memory inode (inode) from inode on device (minode)
 	 */
+
+	/* temp arrangemt */
+	inode->i_mode = S_IFDIR;
+	/* temp arrangemt end*/
 
 	brelse (bh);
 	unlock_new_inode(inode);

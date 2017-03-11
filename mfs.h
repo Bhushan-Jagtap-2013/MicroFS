@@ -20,19 +20,6 @@ struct mfs_block_map {
 	__u8	map[MFS_BLOCKSIZE];
 };
 
-struct mfs_inode {
-	__u32	mi_mode;				/* File mode */
-	__s32	mi_uid;				/* Owner Uid */
-	__s32	mi_gid;				/* Group Id */
-	__u32	mi_atime;			/* Access time */
-	__u32	mi_ctime;			/* Creation time */
-	__u32	mi_mtime;			/* Modification time */
-	__u32	mi_links_count;			/* Links count */
-	__u32	mi_size;				/* Size in bytes */
-        __u32	mi_blocks;			/* Blocks count */
-        __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Blocks count */
-}
-
 /* 
  * MFS_IBLOCK_COUNT will make structure aligned with 64 byte boundry.
  */
@@ -40,3 +27,18 @@ struct mfs_inode {
 #define MFS_IBLOCK_COUNT	7
 #define MFS_ROOT_INODE		2
 #define MFS_MAX_INODE		1024
+#define	MFS_INODE_PER_BLOCK	16
+#define MFS_ILIST_BLOCK		3
+
+struct mfs_inode {
+	__u32	mi_mode;			/* File mode */
+	__s32	mi_uid;				/* Owner Uid */
+	__s32	mi_gid;				/* Group Id */
+	__u32	mi_atime;			/* Access time */
+	__u32	mi_ctime;			/* Creation time */
+	__u32	mi_mtime;			/* Modification time */
+	__u32	mi_links_count;			/* Links count */
+	__u32	mi_size;			/* Size in bytes */
+        __u32	mi_blocks;			/* Blocks count */
+        __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Blocks count */
+};

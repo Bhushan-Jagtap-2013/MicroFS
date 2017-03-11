@@ -7,6 +7,8 @@
  * Superblock operations
  */
 
+extern struct inode *mfs_iget(struct super_block *, unsigned long);
+
 static const struct super_operations mfs_sops = {
 /*
 	.alloc_inode	= bfs_alloc_inode,
@@ -27,6 +29,7 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
 	struct buffer_head *bh;
 	struct mfs_super_block *msb;
 	struct mfs_super_block_info *msbi;
+	struct inode *root;
 	int ret = -EINVAL;
 
 	printk(KERN_EMERG "MicroFS:: Mounting file system");
@@ -76,7 +79,18 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
 	 * Read root inode from device and create dentry for it.
 	 */
 
+	root = mfs_iget(sb, MFS_ROOT_INODE);
+	sb->s_root = d_make_root(root);
+        if (!sb->s_root) {
+		printk(KERN_EMERG "MicroFS : get root inode failed");
+                ret = -ENOMEM;
+                goto release_msbi;
+        }
 	return 0;
+
+release_msbi:
+	kfree(msbi);
+
 release_bh:
 
 	/*
@@ -84,6 +98,7 @@ release_bh:
 	 */
 
 	brelse(bh);
+
 failed:
 	return ret;
 }

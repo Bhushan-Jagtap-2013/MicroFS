@@ -1,6 +1,6 @@
 #include <linux/fs.h>
 #include <linux/buffer_head.h>
-//#include <linux/slab.h>
+#include <linux/slab.h>
 #include "../mfs.h"
 
 /*
@@ -16,10 +16,43 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 {
 	struct buffer_head * bh;
 	struct inode *inode;
+	struct mfs_inode *minode;
+	unsigned long block;
+	unsigned long offset;
 
 	inode = iget_locked(sb, ino);
-	if (!inode)
+	if (!inode) {
 		return ERR_PTR(-ENOMEM);
-	if (!(inode->i_state & I_NEW))
+	}
+	if (!(inode->i_state & I_NEW)) {
 		return inode;
+	}
+	if (ino < MFS_ROOT_INODE && ino > MFS_MAX_INODE) {
+		return ERR_PTR(-EINVAL);
+	}
+
+	/*
+	 * Calculate block number and offset within block.
+	 */
+
+	block = (ino / 4) + MFS_ILIST_BLOCK;
+	offset = ino % 4;
+
+	/*
+	 * Read inode from disk and copy in in-memory inode.
+	 */
+
+	if (!(bh = sb_bread(sb, block))) {
+		return ERR_PTR(-EIO);
+	}
+	minode = (struct mfs_inode *) bh->b_data; 
+	minode += offset;
+
+	/*
+	 * ToDo : Copy content to in-memory inode (inode) from inode on device (minode)
+	 */
+
+	brelse (bh);
+	unlock_new_inode(inode);
+	return inode;
 }

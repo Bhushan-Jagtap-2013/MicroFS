@@ -3,6 +3,21 @@
 #include <linux/slab.h>
 #include "../mfs.h"
 
+/* 
+ * Superblock operations
+ */
+
+static const struct super_operations mfs_sops = {
+/*
+	.alloc_inode	= bfs_alloc_inode,
+	.destroy_inode	= bfs_destroy_inode,
+	.write_inode	= bfs_write_inode,
+	.evict_inode	= bfs_evict_inode,
+	.put_super	= bfs_put_super,
+	.statfs		= bfs_statfs,
+*/
+};
+
 /* mfs_fill_super is expected to fill super block information from device
  * This code is just place holder for the function. Please fill the function
  * with required steps and remove the comment.
@@ -55,6 +70,11 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
 
 	sb->s_magic = MFS_MAGIC;	
 	sb->s_fs_info = msbi;
+	sb->s_op = &mfs_sops;
+
+	/*
+	 * Read root inode from device and create dentry for it.
+	 */
 
 	return 0;
 release_bh:

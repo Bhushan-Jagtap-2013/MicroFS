@@ -56,7 +56,7 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
 		printk(KERN_EMERG "MicroFS : Magic Number mis-match");
 		goto release_bh;
 	}
-	msb->msb_n_free_inode = 1024;	/* Remove : read from device */
+	msb->msb_n_free_inode = 1024;		/* Remove : read from device */
 	msb->msb_n_free_blks = 1024;		/* Remove : read from device */
 
 	/*

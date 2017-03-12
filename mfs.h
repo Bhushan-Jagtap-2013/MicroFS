@@ -1,5 +1,20 @@
-#define MFS_BLOCKSIZE 1024
-#define MFS_MAGIC 0x12345678
+#define MFS_BLOCKSIZE		1024
+#define MFS_MAGIC		0x12345678
+#define MFS_MAX_NUM_INODE	1024
+#define MFS_MAX_NUM_BLK		1024
+
+/*
+ * Block Number		Usage
+ * 0			super block
+ * 1			inode usage map
+ * 2			block usage map
+ * 3			start of inode structure array (ilist)
+ * 			# of block used = 1024 / sizeof(mfs_inode) i.e. 64 = 64 blocks
+ * 66			start of blocks
+ */
+
+#define MFS_ILIST_START_BLOCK_NUM	3
+#define MFS_BLIST_START_BLOCK_NUM	66
 
 struct mfs_super_block {
 	__u32	msb_magic;
@@ -13,11 +28,11 @@ struct mfs_super_block_info {
 };
 
 struct mfs_inode_map {
-	__u8	map[MFS_BLOCKSIZE];
+	__u8	map[MFS_MAX_NUM_INODE];
 };
 
 struct mfs_block_map {
-	__u8	map[MFS_BLOCKSIZE];
+	__u8	map[MFS_MAX_NUM_BLK];
 };
 
 /* 
@@ -29,6 +44,9 @@ struct mfs_block_map {
 #define MFS_MAX_INODE		1024
 #define	MFS_INODE_PER_BLOCK	16
 #define MFS_ILIST_BLOCK		3
+
+#define USED			1
+#define UNUSED			0
 
 struct mfs_inode {
 	__u32	mi_mode;			/* File mode */

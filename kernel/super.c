@@ -26,11 +26,11 @@ static const struct super_operations mfs_sops = {
  */
 
 int mfs_fill_super(struct super_block *sb, void *data, int silent) {
-	struct buffer_head *bh;
-	struct mfs_super_block *msb;
-	struct mfs_super_block_info *msbi;
-	struct inode *root;
-	int ret = -EINVAL;
+	struct mfs_super_block_info	*msbi;
+	struct mfs_super_block		*msb;
+	struct buffer_head		*bh;
+	struct inode			*root;
+	int				ret = -EINVAL;
 
 	printk(KERN_EMERG "MicroFS:: Mounting file system");
 	dump_stack();

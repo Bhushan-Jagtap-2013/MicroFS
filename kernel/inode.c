@@ -15,11 +15,10 @@
 
 struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 {
-	struct buffer_head * bh;
-	struct inode *inode;
-	struct mfs_inode *minode;
-	unsigned long block;
-	unsigned long offset;
+	struct buffer_head	*bh;
+	struct mfs_inode	*minode;
+	struct inode		*inode;
+	unsigned long		block, offset;
 
 	inode = iget_locked(sb, ino);
 	if (!inode) {

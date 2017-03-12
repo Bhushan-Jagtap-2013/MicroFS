@@ -8,13 +8,13 @@
  * 0			super block
  * 1			inode usage map
  * 2			block usage map
- * 3			start of inode structure array (ilist)
- * 			# of block used = 1024 / sizeof(mfs_inode) i.e. 64 = 64 blocks
- * 66			start of blocks
+ * 3 - 66		start of inode structure array (ilist)
+ * 			# of block used = MFS_MAX_NUM_INODE / 16 (# of inode per block) = 64 blocks
+ * 67			start of blocks
  */
 
 #define MFS_ILIST_START_BLOCK_NUM	3
-#define MFS_BLIST_START_BLOCK_NUM	66
+#define MFS_BLIST_START_BLOCK_NUM	67
 
 struct mfs_super_block {
 	__u32	msb_magic;
@@ -57,6 +57,13 @@ struct mfs_inode {
 	__u32	mi_mtime;			/* Modification time */
 	__u32	mi_links_count;			/* Links count */
 	__u32	mi_size;			/* Size in bytes */
-        __u32	mi_blocks;			/* Blocks count */
-        __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Blocks count */
+        __u32	mi_blocks;			/* Block's count */
+        __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Block address */
+};
+
+#define MFS_DIRECTORY_NAME_SIZE		12
+
+struct mfs_directory_entry {
+	__u32	inode_num;
+	char	name[MFS_DIRECTORY_NAME_SIZE];
 };

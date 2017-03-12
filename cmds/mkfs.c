@@ -9,12 +9,14 @@
 
 int main(int argc, char **argv)
 {
-	struct mfs_super_block sb;
-	struct mfs_inode_map imap;
-	struct mfs_block_map bmap;
-	struct mfs_inode inode;
-	time_t ctime = time(NULL);
-	int fd;
+	struct mfs_super_block		sb;
+	struct mfs_inode_map		imap;
+	struct mfs_block_map		bmap;
+	struct mfs_inode		inode;
+	struct mfs_directory_entry	dir;
+	time_t				ctime = time(NULL);
+	char				block[1024];
+	int				fd;
 
 	if (argc != 2) {
 		printf("mkfs.mfs <device>\n");
@@ -71,7 +73,7 @@ int main(int argc, char **argv)
 	write(fd, (char *)&bmap, sizeof(struct mfs_block_map));
 
 	/*
-	 * Initialize inode 1 and 2 with zeros.
+	 * Initialize inode 0 and 1 with zeros.
 	 */
 
 	memset((void *)&inode, 0, sizeof(struct mfs_inode));
@@ -113,14 +115,46 @@ int main(int argc, char **argv)
 	inode.mi_blk_add[0] = MFS_BLIST_START_BLOCK_NUM + 1;
 	write(fd, (char *)&inode, sizeof(struct mfs_inode));
 
+	
+	/*
+	 * Zero-out first 2 blocks, as we want to use them.
+	 */
+
+	lseek(fd, MFS_BLIST_START_BLOCK_NUM * MFS_BLOCKSIZE, SEEK_SET);
+	memset((void *)&block, 0, sizeof(block));
+	write(fd, &block, sizeof(block));
+	write(fd, &block, sizeof(block));
+
 	/*
 	 * Create directory entry for root inode.
 	 */
+
+	lseek(fd, MFS_BLIST_START_BLOCK_NUM * MFS_BLOCKSIZE, SEEK_SET);
+	dir.inode_num = 2;
+	strcpy(dir.name, ".");
+	write(fd, &dir, sizeof(struct mfs_directory_entry));
+
+	dir.inode_num = 2;
+	strcpy(dir.name, "..");
+	write(fd, &dir, sizeof(struct mfs_directory_entry));
+
+	dir.inode_num = 3;
+	strcpy(dir.name, "lost+found");
+	write(fd, &dir, sizeof(struct mfs_directory_entry));
 
 	/*
 	 * Create directory entry for lost+found.
 	 */
 
+	lseek(fd, (MFS_BLIST_START_BLOCK_NUM + 1) * MFS_BLOCKSIZE, SEEK_SET);
+	dir.inode_num = 3;
+	strcpy(dir.name, ".");
+	write(fd, &dir, sizeof(struct mfs_directory_entry));
+
+	dir.inode_num = 2;
+	strcpy(dir.name, "..");
+	write(fd, &dir, sizeof(struct mfs_directory_entry));
+	
 	close(fd);
 	return 0;
 }

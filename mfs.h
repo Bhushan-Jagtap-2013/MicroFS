@@ -43,7 +43,6 @@ struct mfs_block_map {
 #define MFS_ROOT_INODE		2
 #define MFS_MAX_INODE		1024
 #define	MFS_INODE_PER_BLOCK	16
-#define MFS_ILIST_BLOCK		3
 
 #define USED			1
 #define UNUSED			0
@@ -59,6 +58,11 @@ struct mfs_inode {
 	__u32	mi_size;			/* Size in bytes */
         __u32	mi_blocks;			/* Block's count */
         __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Block address */
+};
+
+struct mfs_inode_info {
+        __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Block address */
+	struct inode vfs_inode;
 };
 
 #define MFS_DIRECTORY_NAME_SIZE		12

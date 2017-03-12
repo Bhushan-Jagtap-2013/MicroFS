@@ -46,18 +46,12 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
                 goto failed;
 	}
 	msb = (struct mfs_super_block *)bh->b_data;
-
-	/*
-	 * ToDo: Replace code that manually initialize super block from device.
-	 */
-
-	msb->msb_magic = MFS_MAGIC; 		/* Remove : read from device */
 	if(msb->msb_magic != MFS_MAGIC) {
 		printk(KERN_EMERG "MicroFS : Magic Number mis-match");
 		goto release_bh;
 	}
-	msb->msb_n_free_inode = 1024;		/* Remove : read from device */
-	msb->msb_n_free_blks = 1024;		/* Remove : read from device */
+
+	printk(KERN_EMERG "MicroFS : %x %u %u", msb->msb_magic, msb->msb_n_free_inode, msb->msb_n_free_blks);
 
 	/*
 	 * Initialize incore super block structure of mfs.
@@ -71,7 +65,7 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
 	 * Initialize linux super block.
 	 */
 
-	sb->s_magic = MFS_MAGIC;	
+	sb->s_magic = msb->msb_magic;	
 	sb->s_fs_info = msbi;
 	sb->s_op = &mfs_sops;
 

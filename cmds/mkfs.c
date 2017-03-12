@@ -132,15 +132,15 @@ int main(int argc, char **argv)
 	lseek(fd, MFS_BLIST_START_BLOCK_NUM * MFS_BLOCKSIZE, SEEK_SET);
 	dir.inode_num = 2;
 	strcpy(dir.name, ".");
-	write(fd, &dir, sizeof(struct mfs_directory_entry));
+	write(fd, (char *)&dir, sizeof(struct mfs_directory_entry));
 
 	dir.inode_num = 2;
 	strcpy(dir.name, "..");
-	write(fd, &dir, sizeof(struct mfs_directory_entry));
+	write(fd, (char *)&dir, sizeof(struct mfs_directory_entry));
 
 	dir.inode_num = 3;
 	strcpy(dir.name, "lost+found");
-	write(fd, &dir, sizeof(struct mfs_directory_entry));
+	write(fd, (char *)&dir, sizeof(struct mfs_directory_entry));
 
 	/*
 	 * Create directory entry for lost+found.
@@ -149,11 +149,11 @@ int main(int argc, char **argv)
 	lseek(fd, (MFS_BLIST_START_BLOCK_NUM + 1) * MFS_BLOCKSIZE, SEEK_SET);
 	dir.inode_num = 3;
 	strcpy(dir.name, ".");
-	write(fd, &dir, sizeof(struct mfs_directory_entry));
+	write(fd, (char *)&dir, sizeof(struct mfs_directory_entry));
 
 	dir.inode_num = 2;
 	strcpy(dir.name, "..");
-	write(fd, &dir, sizeof(struct mfs_directory_entry));
+	write(fd, (char *)&dir, sizeof(struct mfs_directory_entry));
 	
 	close(fd);
 	return 0;

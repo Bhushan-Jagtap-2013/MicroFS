@@ -5,7 +5,7 @@
 #include <linux/slab.h>
 #include "../mfs.h"
 
-#define FS_AUTHOR "Bhushan Jagtap"
+#define FS_AUTHOR "MicroFS team"
 #define FS_DESC "Simple file system module"
 
 

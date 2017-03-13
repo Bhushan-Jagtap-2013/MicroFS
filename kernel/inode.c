@@ -138,7 +138,6 @@ void mfs_destroy_inode(struct inode *inode) {
 	 */
 
 	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
-	BUG();
 }
 
 int mfs_write_inode(struct inode *inode, struct writeback_control *wbc) {
@@ -148,7 +147,6 @@ int mfs_write_inode(struct inode *inode, struct writeback_control *wbc) {
 	 */
 
 	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
-	BUG();
 	return 0;	/* remove this */
 }
 	
@@ -159,7 +157,6 @@ int mfs_drop_inode(struct inode *inode) {
 	 */
 
 	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
-	BUG();
 	return 0;	/* remove this */
 }
 
@@ -170,5 +167,4 @@ void mfs_evict_inode(struct inode *inode) {
 	 */
 
 	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
-	BUG();
 }

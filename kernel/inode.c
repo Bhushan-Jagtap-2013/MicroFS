@@ -1,11 +1,13 @@
 #include <linux/fs.h>
 #include <linux/buffer_head.h>
 #include <linux/slab.h>
+#include <linux/mm.h>
 #include <linux/stat.h>
 #include "../mfs.h"
 
 extern const struct file_operations mfs_dir_ops;
 extern const struct inode_operations mfs_dir_inops;
+extern struct kmem_cache *mfs_inode_cachep;
 
 /*
  * GET_MFS_INODE will return mfs_inode_info structure pointer by encapsulating linux inode structure
@@ -110,15 +112,23 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	return inode;
 }
 
+/*
+ * mfs_alloc_inode will be called to get in-memory inode from get_locked.
+ */
+
 struct inode *mfs_alloc_inode(struct super_block *sb) {
+	struct mfs_inode_info	*im_inode;
 
 	/*
-	 * ToDo : Provide implementation
+	 * get inode from slab
 	 */
 
 	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
-	BUG();
-	return NULL;	/* remove this */
+	im_inode = kmem_cache_alloc(mfs_inode_cachep, GFP_KERNEL);
+	if (!im_inode) {
+		return NULL;
+	}
+        return &im_inode->vfs_inode;
 }
 
 void mfs_destroy_inode(struct inode *inode) {

@@ -4,6 +4,9 @@
 #include <linux/stat.h>
 #include "../mfs.h"
 
+extern const struct file_operations mfs_dir_ops;
+extern const struct inode_operations mfs_dir_inops;
+
 /*
  * GET_MFS_INODE will return mfs_inode_info structure pointer by encapsulating linux inode structure
  * in it at vxfs_inode location.
@@ -86,6 +89,16 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	inode->i_private = kmalloc(sizeof(struct mfs_inode), GFP_KERNEL);
 
 	/* 
+	 * allocate appropriate ops to inode
+	 */
+
+	if (inode->i_mode & S_IFDIR) {
+		printk(KERN_EMERG "MicroFS:: initializing dir ops ");
+		inode->i_fop = &mfs_dir_ops;
+		inode->i_op = &mfs_dir_inops;
+	}
+
+	/* 
 	 * store block addresses in private filed of in memory inode
 	 */
 
@@ -95,4 +108,57 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	brelse (bh);
 	unlock_new_inode(inode);
 	return inode;
+}
+
+struct inode *mfs_alloc_inode(struct super_block *sb) {
+
+	/*
+	 * ToDo : Provide implementation
+	 */
+
+	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	BUG();
+	return NULL;	/* remove this */
+}
+
+void mfs_destroy_inode(struct inode *inode) {
+	
+	/*
+	 * ToDo : Provide implementation
+	 */
+
+	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	BUG();
+}
+
+int mfs_write_inode(struct inode *inode, struct writeback_control *wbc) {
+
+	/*
+	 * ToDo : Provide implementation
+	 */
+
+	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	BUG();
+	return 0;	/* remove this */
+}
+	
+int mfs_drop_inode(struct inode *inode) {
+
+	/*
+	 * ToDo : Provide implementation
+	 */
+
+	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	BUG();
+	return 0;	/* remove this */
+}
+
+void mfs_evict_inode(struct inode *inode) {
+
+	/*
+	 * ToDo : Provide implementation
+	 */
+
+	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	BUG();
 }

@@ -1,5 +1,5 @@
 obj-m += mfs.o
-mfs-objs := init.o super.o inode.o
+mfs-objs := init.o super.o inode.o dir.o
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules

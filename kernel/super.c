@@ -8,16 +8,41 @@
  */
 
 extern struct inode *mfs_iget(struct super_block *, unsigned long);
+extern struct inode *mfs_alloc_inode(struct super_block *sb);
+extern void mfs_destroy_inode(struct inode *);
+extern int mfs_write_inode(struct inode *, struct writeback_control *wbc);
+extern int mfs_drop_inode(struct inode *);
+extern void mfs_evict_inode(struct inode *);
+
+void mfs_put_super(struct super_block *sb) {
+
+	/* 
+	 * ToDo : Provide implementation
+	 */
+
+	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	dump_stack();
+}
+
+int mfs_statfs(struct dentry *dentry, struct kstatfs *buff) {
+
+	/* 
+	 * ToDo : Provide implementation
+	 */
+
+	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	dump_stack();
+	return 0;
+}
 
 static const struct super_operations mfs_sops = {
-/*
-	.alloc_inode	= bfs_alloc_inode,
-	.destroy_inode	= bfs_destroy_inode,
-	.write_inode	= bfs_write_inode,
-	.evict_inode	= bfs_evict_inode,
-	.put_super	= bfs_put_super,
-	.statfs		= bfs_statfs,
-*/
+	.alloc_inode	= mfs_alloc_inode,
+	.destroy_inode	= mfs_destroy_inode,
+	.write_inode	= mfs_write_inode,
+	.drop_inode	= mfs_drop_inode,
+	.evict_inode	= mfs_evict_inode,
+	.put_super	= mfs_put_super,
+	.statfs		= mfs_statfs,
 };
 
 /* mfs_fill_super is expected to fill super block information from device

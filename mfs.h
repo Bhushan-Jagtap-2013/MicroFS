@@ -60,10 +60,14 @@ struct mfs_inode {
         __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Block address */
 };
 
+#ifdef __KERNEL__
+
 struct mfs_inode_info {
         __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Block address */
 	struct inode vfs_inode;
 };
+
+#endif
 
 #define MFS_DIRECTORY_NAME_SIZE		12
 

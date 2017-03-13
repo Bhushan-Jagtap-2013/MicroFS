@@ -1,6 +1,11 @@
 #include <linux/fs.h>
+#include <linux/buffer_head.h>
 
 int mfs_iterate(struct file *file, struct dir_context *dir_context) {
+	struct mfs_directory_entry 	*de;
+	struct buffer_head 		*bh;
+	struct inode			*inode = file_inode(file);
+
 	dump_stack();
 	return 0;
 }

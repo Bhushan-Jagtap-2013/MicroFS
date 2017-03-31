@@ -21,7 +21,7 @@ extern struct kmem_cache *mfs_inode_cachep;
  *                              -------------------------
  */
 
-static inline struct mfs_inode_info *GET_MFS_INODE(struct inode *inode) {
+inline struct mfs_inode_info *GET_MFS_INODE(struct inode *inode) {
 	return (container_of(inode, struct mfs_inode_info, vfs_inode));
 }
 

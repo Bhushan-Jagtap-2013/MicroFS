@@ -70,6 +70,7 @@ struct mfs_inode_info {
 #endif
 
 #define MFS_DIRECTORY_NAME_SIZE		12
+#define MFS_DIR_MAX_ENT			64
 
 struct mfs_directory_entry {
 	__u32	inode_num;

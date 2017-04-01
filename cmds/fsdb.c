@@ -140,6 +140,7 @@ int main(int argc,char **argv)
 
 	if (devfd < 0) {
 		printf("Failed to open the device \n");
+		exit(1);
 	}
 
 	block_no=atoi(argv[2]);
@@ -150,12 +151,12 @@ int main(int argc,char **argv)
 		print_inode(&inode);
 	}
 
-	if (strcmp(argv[4],"superblock")==0) {
+	else if (strcmp(argv[4],"superblock")==0) {
 		read_sbnode(block_no,offset,&sb);
 		print_sbnode(&sb);
 	}
 
-	if (strcmp(argv[4],"inodemap")==0) {
+	else if (strcmp(argv[4],"inodemap")==0) {
 		lseek(devfd,((block_no*MFS_BLOCKSIZE)+offset),SEEK_SET);
 		read(devfd,(char *)&imap,sizeof(struct mfs_inode_map));
 		printf("%d",imap.map[0]);
@@ -170,7 +171,7 @@ int main(int argc,char **argv)
 		printf("\n");
 	}
 
-	if (strcmp(argv[4],"blockmap")==0) {
+	else if (strcmp(argv[4],"blockmap")==0) {
 		lseek(devfd,((block_no*MFS_BLOCKSIZE)+offset),SEEK_SET);
                 read(devfd,(char *)&bmap,sizeof(struct mfs_block_map));
                 printf("%d",bmap.map[0]);
@@ -185,7 +186,7 @@ int main(int argc,char **argv)
 		printf("\n");
 	}
 
-	if (strcmp(argv[4],"directory")==0) {
+	else if (strcmp(argv[4],"directory")==0) {
 		read_dir(block_no,offset,buf);
 		print_dir(buf);
 	}

@@ -43,7 +43,10 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	unsigned long		block, offset;
 	int			i;
 
+	printk(KERN_EMERG "MicroFS : %s : 1 : inode reading : %lu ", __func__ ,ino);
 	inode = iget_locked(sb, ino);
+	printk(KERN_EMERG "MicroFS : %s : 2 : inode reading : %lu ", __func__ ,inode->i_ino);
+	dump_stack();
 	if (!inode) {
 		return ERR_PTR(-ENOMEM);
 	}
@@ -63,7 +66,7 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	block = (ino / 4) + MFS_ILIST_START_BLOCK_NUM;
 	offset = ino % 4;
 
-	printk(KERN_EMERG "MicroFS : block + offset %lu %lu", block, offset);
+	printk(KERN_EMERG "MicroFS : iget2 : inode reading : %lu : block + offset %lu %lu", inode->i_ino, block, offset);
 
 	/*
 	 * Read inode from disk and copy in in-memory inode.
@@ -123,7 +126,7 @@ struct inode *mfs_alloc_inode(struct super_block *sb) {
 	 * get inode from slab
 	 */
 
-	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	printk(KERN_EMERG "MicroFS:: Calling %s ", __func__);
 	im_inode = kmem_cache_alloc(mfs_inode_cachep, GFP_KERNEL);
 	if (!im_inode) {
 		return NULL;

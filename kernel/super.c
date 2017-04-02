@@ -40,7 +40,7 @@ static const struct super_operations mfs_sops = {
 	.destroy_inode	= mfs_destroy_inode,
 	.write_inode	= mfs_write_inode,
 	//.drop_inode	= mfs_drop_inode,
-	.evict_inode	= mfs_evict_inode,
+	//.evict_inode	= mfs_evict_inode,
 	.put_super	= mfs_put_super,
 	.statfs		= mfs_statfs,
 };

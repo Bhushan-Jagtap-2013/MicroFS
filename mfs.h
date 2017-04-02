@@ -73,6 +73,6 @@ struct mfs_inode_info {
 #define MFS_DIR_MAX_ENT			64
 
 struct mfs_directory_entry {
-	__u32	inode_num;
+	__le32	inode_num;
 	char	name[MFS_DIRECTORY_NAME_SIZE];
 };

@@ -48,13 +48,13 @@ struct mfs_block_map {
 #define UNUSED			0
 
 struct mfs_inode {
-	__u32	mi_mode;			/* File mode */
+	__le32	mi_mode;			/* File mode */
 	__s32	mi_uid;				/* Owner Uid */
 	__s32	mi_gid;				/* Group Id */
 	__u32	mi_atime;			/* Access time */
 	__u32	mi_ctime;			/* Creation time */
 	__u32	mi_mtime;			/* Modification time */
-	__u32	mi_links_count;			/* Links count */
+	__le32	mi_links_count;			/* Links count */
 	__u32	mi_size;			/* Size in bytes */
         __u32	mi_blocks;			/* Block's count */
         __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Block address */
@@ -69,10 +69,11 @@ struct mfs_inode_info {
 
 #endif
 
-#define MFS_DIRECTORY_NAME_SIZE		12
+#define MFS_DIRECTORY_NAME_SIZE		14
 #define MFS_DIR_MAX_ENT			64
+#define MFS_DIR_ENT_SIZE		16
 
 struct mfs_directory_entry {
-	__le32	inode_num;
+	__le16	inode_num;
 	char	name[MFS_DIRECTORY_NAME_SIZE];
 };

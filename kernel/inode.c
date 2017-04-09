@@ -82,10 +82,17 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	 * Copy content to in-memory inode (inode) from inode on device (minode)
 	 */
 
-	inode->i_mode = minode->mi_mode;
+	inode->i_mode = 0x0000FFFF & le32_to_cpu(minode->mi_mode);
+	printk(KERN_EMERG "MicroFS : %s :  expected %x", __func__ , S_IFDIR | S_IRWXU | S_IRWXG | S_IRWXO);
+	printk(KERN_EMERG "MicroFS : %s :  after : inode %x minode %x", __func__ , inode->i_mode, le32_to_cpu(minode->mi_mode));
 	i_uid_write(inode, minode->mi_uid);
 	i_gid_write(inode, minode->mi_gid);
+	printk(KERN_EMERG "MicroFS : %s :  link count %d minode %d", __func__ , inode->i_link, minode->mi_links_count);
 	set_nlink(inode, minode->mi_links_count);
+	printk(KERN_EMERG "MicroFS : %s :  link count %d minode %d", __func__ , inode->i_link, minode->mi_links_count);
+	set_nlink(inode, le32_to_cpu(minode->mi_links_count));
+	printk(KERN_EMERG "MicroFS : %s :  link count %d minode %d", __func__ , inode->__i_nlink, minode->mi_links_count);
+
 	inode->i_size = minode->mi_size;
 	inode->i_atime.tv_sec = (signed)minode->mi_atime;
 	inode->i_ctime.tv_sec = (signed)minode->mi_ctime;

@@ -1,27 +1,6 @@
 #include <linux/buffer_head.h>
-#include "../mfs.h"
-
-
-/* remove this */
-
-#include <linux/stddef.h>
-#include <linux/kernel.h>
-#include <linux/export.h>
-#include <linux/time.h>
-#include <linux/mm.h>
-#include <linux/errno.h>
-#include <linux/stat.h>
-#include <linux/file.h>
 #include <linux/fs.h>
-#include <linux/fsnotify.h>
-#include <linux/dirent.h>
-#include <linux/security.h>
-#include <linux/syscalls.h>
-#include <linux/unistd.h>
-
-#include <asm/uaccess.h>
-
-/* ----- */
+#include "../mfs.h"
 
 extern inline struct mfs_inode_info *GET_MFS_INODE(struct inode *);
 extern struct inode *mfs_iget(struct super_block *, unsigned long);
@@ -31,11 +10,10 @@ int mfs_iterate(struct file *file, struct dir_context *dir_context) {
 	struct buffer_head 		*bh;
 	struct mfs_inode_info		*minode_info;
 	struct inode			*inode = file_inode(file);
-	int				block_num, index, i;
-	u64				ino;
+	int				block_num, i;
 	int				size;
 
-	printk(KERN_EMERG "MicroFS:: calling %s pos %d", __func__, dir_context->pos);
+	printk(KERN_EMERG "MicroFS:: calling %s pos %lld", __func__, dir_context->pos);
 	dump_stack();
 
 	if (dir_context->pos >= MFS_DIR_MAX_ENT) {
@@ -47,15 +25,9 @@ int mfs_iterate(struct file *file, struct dir_context *dir_context) {
 		printk(KERN_EMERG "MicroFS:: UNEXPECTED");
 		return 0;
 	}
-//	dir_context->pos = MFS_DIR_ENT_SIZE * 2;
-	
-//	return 0;
-//	if (!dir_emit_dots(file, dir_context))
-	//	return 0;
-
 
 	/*
-	 * ToDo: check correctnes dir_context->pos
+	 * ToDo: check correctness of  dir_context->pos
 	 */
 
 	/*
@@ -68,39 +40,6 @@ int mfs_iterate(struct file *file, struct dir_context *dir_context) {
 	 * 	o dir_emit() failed to fill entries
 	 * 5. if we will encounter at end of the block. read next from number from inode then adjust offset and start reading again
 	 */
-/*
-	minode_info = GET_MFS_INODE(inode);
-	while (dir_context->pos < inode->i_size) {
-		index = dir_context->pos / MFS_BLOCKSIZE;
-		block_num = minode_info->mi_blk_add[index];
-		bh = sb_bread(inode->i_sb, block_num);
-		if (!bh) {
-			printk(KERN_EMERG "MicroFS:: Error in reading directory");
-			return 0;
-		}
-		de = (struct mfs_directory_entry *)bh->b_data;
-		i = (dir_context->pos % MFS_BLOCKSIZE) / sizeof(struct mfs_directory_entry); // Re visit this
-		while (i < MFS_DIR_MAX_ENT) { 
-			if (le32_to_cpu((de + i)->inode_num)) {
-				size = strnlen((de + i)->name, MFS_DIRECTORY_NAME_SIZE);
-				printk(KERN_EMERG "MicroFS:: end ad :%p : direcory offset : %u block number : %u inode num %u size of dir %ld", de+i, i, block_num, le32_to_cpu((de+i)->inode_num), sizeof(struct mfs_directory_entry));
-				if (!dir_emit(dir_context, (de + i)->name, size, le16_to_cpu((de + i)->inode_num), DT_DIR)) {
-					printk(KERN_EMERG "........................INSIDE.......................");
-					brelse(bh);
-					return 0;
-				}
-				printk(KERN_EMERG "MicroFS:: dir name %s", (de + i)->name);
-			}
-			i++;
-			printk(KERN_EMERG "MicroFS:: dir name %d  i %d", dir_context->pos , i);
-			dir_context->pos += MFS_DIR_ENT_SIZE;
-		}
-		brelse(bh);
-	}
-	return 0;
-
-
-	*/
 
 	minode_info = GET_MFS_INODE(inode);
 	block_num = minode_info->mi_blk_add[0];
@@ -111,21 +50,21 @@ int mfs_iterate(struct file *file, struct dir_context *dir_context) {
 	}
 	de = (struct mfs_directory_entry *)bh->b_data;
 	i = dir_context->pos ;
+
+	/* 
+	 * ASSUMTION : directory inode will have only one block of data
+	 */
+
 	while (i < MFS_DIR_MAX_ENT) { 
 		if (le32_to_cpu((de + i)->inode_num)) {
 			size = strnlen((de + i)->name, MFS_DIRECTORY_NAME_SIZE);
-			ino = le16_to_cpu((de + i)->inode_num);
-			printk(KERN_EMERG "MicroFS:: end ad :%p : direcory offset : %u block number : %u inode num %u size of dir %ld", de+i, i, block_num, ino, sizeof(struct mfs_directory_entry));
-			if (!dir_emit(dir_context, (de + i)->name, size, ino, DT_DIR)) {
-				printk(KERN_EMERG "........................INSIDE.......................");
+			if (!dir_emit(dir_context, (de + i)->name, size, le16_to_cpu((de + i)->inode_num), DT_DIR)) {
 				brelse(bh);
 				return 0;
 			}
-			printk(KERN_EMERG "MicroFS:: dir name %s", (de + i)->name);
 		}
 		i++;
 		dir_context->pos = i;
-		printk(KERN_EMERG "MicroFS:: dir name %d  i %d", dir_context->pos , i);
 	}
 	brelse(bh);
 	return 0;
@@ -152,8 +91,9 @@ static struct dentry *mfs_lookup(struct inode *dir, struct dentry *dentry, unsig
 	int				i, j, flag;
 
 	/* 
-	 * 1. check dentry is present in directory
+	 * 1. check dentry->name  is present in directory
 	 * 2. read corresponding inode in memory
+	 * 3. initialize dentry object with inode found else initialize with NULL
 	 */
 
 	printk(KERN_EMERG "MicroFS:: Calling %s :  looking for inode %lu: dir name : %s", __func__, dir->i_ino, dentry->d_name.name);
@@ -178,15 +118,12 @@ static struct dentry *mfs_lookup(struct inode *dir, struct dentry *dentry, unsig
 		brelse(bh);
 	}
 	if(flag == 1) {
-		printk(KERN_EMERG "MicroFS:: FOUND ETNRY READING INODE %u", le32_to_cpu(de->inode_num));
 		inode = mfs_iget(dir->i_sb, le32_to_cpu(de->inode_num));
                 if (IS_ERR(inode)) {
                         return ERR_CAST(inode);
                 }
-		inode = mfs_iget(dir->i_sb, dir->i_ino);
-		d_add(dentry, inode);
 	}
-	//d_splice_alias(inode, dentry);
+	d_add(dentry, inode);
 	return NULL;
 }
 

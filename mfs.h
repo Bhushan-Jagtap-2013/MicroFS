@@ -48,13 +48,13 @@ struct mfs_block_map {
 #define UNUSED			0
 
 struct mfs_inode {
-	__le32	mi_mode;			/* File mode */
+	__u32	mi_mode;			/* File mode */
 	__s32	mi_uid;				/* Owner Uid */
 	__s32	mi_gid;				/* Group Id */
 	__u32	mi_atime;			/* Access time */
 	__u32	mi_ctime;			/* Creation time */
 	__u32	mi_mtime;			/* Modification time */
-	__le32	mi_links_count;			/* Links count */
+	__u32	mi_links_count;			/* Links count */
 	__u32	mi_size;			/* Size in bytes */
         __u32	mi_blocks;			/* Block's count */
         __u32	mi_blk_add[MFS_IBLOCK_COUNT];	/* Block address */

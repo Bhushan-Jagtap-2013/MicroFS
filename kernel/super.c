@@ -40,7 +40,7 @@ static const struct super_operations mfs_sops = {
 	.destroy_inode	= mfs_destroy_inode,
 	.write_inode	= mfs_write_inode,
 	//.drop_inode	= mfs_drop_inode,
-	.evict_inode	= mfs_evict_inode,
+	//.evict_inode	= mfs_evict_inode,
 	.put_super	= mfs_put_super,
 	.statfs		= mfs_statfs,
 };
@@ -105,11 +105,9 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
                 ret = -ENOMEM;
                 goto release_msbi;
         }
-	printk(KERN_EMERG "MicroFS : HERE 1");
 	return 0;
 
 release_msbi:
-	printk(KERN_EMERG "MicroFS : HERE 2");
 	kfree(msbi);
 
 release_bh:
@@ -118,10 +116,8 @@ release_bh:
 	 * ToDo: release bh when file system is unmounted.
 	 */
 
-	printk(KERN_EMERG "MicroFS : HERE 3");
 	brelse(bh);
 
 failed:
-	printk(KERN_EMERG "MicroFS : HERE 4");
 	return ret;
 }

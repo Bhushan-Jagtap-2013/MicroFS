@@ -21,7 +21,7 @@ extern struct kmem_cache *mfs_inode_cachep;
  *                              -------------------------
  */
 
-static inline struct mfs_inode_info *GET_MFS_INODE(struct inode *inode) {
+inline struct mfs_inode_info *GET_MFS_INODE(struct inode *inode) {
 	return (container_of(inode, struct mfs_inode_info, vfs_inode));
 }
 
@@ -44,6 +44,8 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	int			i;
 
 	inode = iget_locked(sb, ino);
+	printk(KERN_EMERG "MicroFS : %s : 2 : inode reading : %lu ", __func__ ,inode->i_ino);
+	dump_stack();
 	if (!inode) {
 		return ERR_PTR(-ENOMEM);
 	}
@@ -63,7 +65,7 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	block = (ino / 4) + MFS_ILIST_START_BLOCK_NUM;
 	offset = ino % 4;
 
-	printk(KERN_EMERG "MicroFS : block + offset %lu %lu", block, offset);
+	printk(KERN_EMERG "MicroFS : iget2 : inode reading : %lu : block + offset %lu %lu", inode->i_ino, block, offset);
 
 	/*
 	 * Read inode from disk and copy in in-memory inode.
@@ -83,6 +85,7 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	i_uid_write(inode, minode->mi_uid);
 	i_gid_write(inode, minode->mi_gid);
 	set_nlink(inode, minode->mi_links_count);
+
 	inode->i_size = minode->mi_size;
 	inode->i_atime.tv_sec = (signed)minode->mi_atime;
 	inode->i_ctime.tv_sec = (signed)minode->mi_ctime;
@@ -123,7 +126,7 @@ struct inode *mfs_alloc_inode(struct super_block *sb) {
 	 * get inode from slab
 	 */
 
-	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	printk(KERN_EMERG "MicroFS:: Calling %s ", __func__);
 	im_inode = kmem_cache_alloc(mfs_inode_cachep, GFP_KERNEL);
 	if (!im_inode) {
 		return NULL;

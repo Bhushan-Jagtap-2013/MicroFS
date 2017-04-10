@@ -1,10 +1,10 @@
 probe kernel.function("filldir@fs/readdir.c").call
 {
-    if(execname() == "ls")
-    {
-        printf("%s -> %s : %s\n", thread_indent(1), probefunc(), kernel_string($name));
-        printf("%s \n", $$parms);
-    }
+	if(execname() == "ls")
+	{
+		printf("%s -> %s : %s\n", thread_indent(1), probefunc(), kernel_string($name));
+		printf("%s \n", $$parms);
+	}
 }
 
 probe begin {

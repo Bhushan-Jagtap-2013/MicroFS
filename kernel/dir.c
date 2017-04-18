@@ -77,9 +77,71 @@ const struct file_operations mfs_dir_ops = {
 	.llseek		= generic_file_llseek,
 };
 
+static int mfs_add_entry(struct inode *dir, const unsigned char *name, int namelen, int ino)
+{
+        struct buffer_head *bh;
+        struct mfs_directory_entry *de;
+        int block, sblock, eblock, off, pos,block_num;
+        int i,j,k;
+        struct mfs_inode_info *minode_info;
+
+        printk (KERN_EMERG "MicroFS :: Inside %s - name=%s, namelen=%d\n",__func__,name,namelen);
+
+        if (!namelen)
+                return -ENOENT;
+        if (namelen > MFS_DIRECTORY_NAME_SIZE)
+                return -ENAMETOOLONG;
+
+        minode_info = GET_MFS_INODE(dir);
+        for(i = 0; i < dir->i_blocks; i++) {
+                printk(KERN_EMERG "MicroFS:: Inside %s :: READING BLOCK %u", __func__, minode_info->mi_blk_add[i]);
+                bh = sb_bread(dir->i_sb, minode_info->mi_blk_add[i]);
+                de = (struct mfs_directory_entry *)bh->b_data;
+                if (!bh) {
+                        printk(KERN_EMERG "MicroFS:: Error in reading directory");
+                        return NULL;
+                }
+                for(j = 0; j < MFS_DIR_MAX_ENT; j++) {
+                        if (!le32_to_cpu(de->inode_num)) {
+                                if (pos >= dir->i_size) {
+                                        dir->i_size += MFS_DIRECTORY_NAME_SIZE;
+                                        dir->i_ctime = CURRENT_TIME_SEC;
+                                }
+                                dir->i_mtime = CURRENT_TIME_SEC;
+                                mark_inode_dirty(dir);
+                                de->inode_num = cpu_to_le32((u32)ino);
+                                for (k = 0; k < MFS_DIRECTORY_NAME_SIZE; k++)
+                                        de->name[k] =
+                                                (k < namelen) ? name[k] : 0;
+                                mark_buffer_dirty_inode(bh, dir);
+                                brelse(bh);
+                                printk(KERN_EMERG "MicroFS :: Entry %s added successfully\n",de->name);
+                                return 0;
+                        }
+                        de++;
+                }
+                brelse(bh);
+        }
+        return -ENOSPC;
+}
+
 static int mfs_create(struct inode *dir, struct dentry *dentry, umode_t mode, bool excl) {
 	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
 	dump_stack();
+        int err;
+        struct inode *inode;
+        struct super_block *s = dir->i_sb;
+        unsigned long inode_num;
+
+        inode = mfs_iget(s,3);
+        err = mfs_add_entry(dir, dentry->d_name.name, dentry->d_name.len,
+                                                        inode->i_ino);
+        if (err) {
+                inode_dec_link_count(inode);
+                iput(inode);
+                return err;
+        }
+        d_instantiate(dentry, inode);
 	return 0;
 }
 

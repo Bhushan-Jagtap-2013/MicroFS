@@ -27,6 +27,7 @@ struct mfs_super_block_info {
 	struct mfs_super_block *sbi_msb;
 };
 
+#define INODE_MAP_BLK	1
 struct mfs_inode_map {
 	__u8	map[MFS_MAX_NUM_INODE];
 };

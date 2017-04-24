@@ -4,6 +4,7 @@
 
 extern inline struct mfs_inode_info *GET_MFS_INODE(struct inode *);
 extern struct inode *mfs_iget(struct super_block *, unsigned long);
+int get_inode_number(struct super_block *);
 
 int mfs_iterate(struct file *file, struct dir_context *dir_context) {
 	struct mfs_directory_entry 	*de;
@@ -77,11 +78,9 @@ const struct file_operations mfs_dir_ops = {
 	.llseek		= generic_file_llseek,
 };
 
-static int mfs_add_entry(struct inode *dir, const unsigned char *name, int namelen, int ino)
-{
+static int mfs_add_entry(struct inode *dir, const unsigned char *name, int namelen, int ino) {
         struct buffer_head *bh;
         struct mfs_directory_entry *de;
-        int block, sblock, eblock, off, pos,block_num;
         int i,j,k;
         struct mfs_inode_info *minode_info;
 
@@ -99,21 +98,18 @@ static int mfs_add_entry(struct inode *dir, const unsigned char *name, int namel
                 de = (struct mfs_directory_entry *)bh->b_data;
                 if (!bh) {
                         printk(KERN_EMERG "MicroFS:: Error in reading directory");
-                        return NULL;
+                	return -ENOENT;
                 }
                 for(j = 0; j < MFS_DIR_MAX_ENT; j++) {
-                        if (!le32_to_cpu(de->inode_num)) {
-                                if (pos >= dir->i_size) {
-                                        dir->i_size += MFS_DIRECTORY_NAME_SIZE;
-                                        dir->i_ctime = CURRENT_TIME_SEC;
-                                }
+                        if (!le16_to_cpu(de->inode_num)) {
                                 dir->i_mtime = CURRENT_TIME_SEC;
-                                mark_inode_dirty(dir);
-                                de->inode_num = cpu_to_le32((u32)ino);
+                                de->inode_num = cpu_to_le16(ino);
                                 for (k = 0; k < MFS_DIRECTORY_NAME_SIZE; k++)
-                                        de->name[k] =
-                                                (k < namelen) ? name[k] : 0;
+				{	
+					de->name[k] = (k < namelen) ? name[k] : 0;
+				}
                                 mark_buffer_dirty_inode(bh, dir);
+                                mark_inode_dirty(dir);
                                 brelse(bh);
                                 printk(KERN_EMERG "MicroFS :: Entry %s added successfully\n",de->name);
                                 return 0;
@@ -125,17 +121,42 @@ static int mfs_add_entry(struct inode *dir, const unsigned char *name, int namel
         return -ENOSPC;
 }
 
-static int mfs_create(struct inode *dir, struct dentry *dentry, umode_t mode, bool excl) {
-	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
-	dump_stack();
-        int err;
-        struct inode *inode;
-        struct super_block *s = dir->i_sb;
-        unsigned long inode_num;
+const struct file_operations mfs_file_operations = {
+};
 
-        inode = mfs_iget(s,3);
-        err = mfs_add_entry(dir, dentry->d_name.name, dentry->d_name.len,
-                                                        inode->i_ino);
+const struct inode_operations mfs_file_inops = {
+};
+
+static int mfs_create(struct inode *dir, struct dentry *dentry, umode_t mode, bool excl) {
+	struct mfs_super_block_info     *msbi;	
+	struct super_block		*sb = dir->i_sb;
+	struct inode			*inode;
+	int				err = -1, ino; 
+
+	/*
+	 * Linux will call this funtion while allocatinig a directory entry.
+	 * Linux will make sure that directory entry with same name is not present by calling mfs_lookup().
+	 * mfs_lookup() will initialize directory entry with negative value, if directory entry is not present.
+	 */
+
+	dump_stack();
+	inode = new_inode(sb);
+	if (!inode) {
+                iput(inode);
+		return -ENOMEM;
+	}
+	msbi = sb->s_fs_info;
+	msbi->sbi_msb->msb_n_free_inode--;
+	ino = get_inode_number(dir->i_sb);
+        inode_init_owner(inode, dir, mode);
+        inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC; 
+        inode->i_blocks = 0; 
+        inode->i_op = &mfs_file_inops;
+        inode->i_fop = &mfs_file_operations;
+        inode->i_ino = ino;
+        insert_inode_hash(inode);
+        mark_inode_dirty(inode); 
+        err = mfs_add_entry(dir, dentry->d_name.name, dentry->d_name.len, inode->i_ino);
         if (err) {
                 inode_dec_link_count(inode);
                 iput(inode);
@@ -171,7 +192,7 @@ static struct dentry *mfs_lookup(struct inode *dir, struct dentry *dentry, unsig
 			return NULL;
 		}
 		for(j = 0; j < MFS_DIR_MAX_ENT; j++) {
-			if (le32_to_cpu(de->inode_num) != 0 && strcmp(de->name, dentry->d_name.name) == 0) {
+			if (le16_to_cpu(de->inode_num) != 0 && strcmp(de->name, dentry->d_name.name) == 0) {
 				flag = 1;
 				break;
 			}
@@ -180,7 +201,7 @@ static struct dentry *mfs_lookup(struct inode *dir, struct dentry *dentry, unsig
 		brelse(bh);
 	}
 	if(flag == 1) {
-		inode = mfs_iget(dir->i_sb, le32_to_cpu(de->inode_num));
+		inode = mfs_iget(dir->i_sb, le16_to_cpu(de->inode_num));
                 if (IS_ERR(inode)) {
                         return ERR_CAST(inode);
                 }
@@ -189,10 +210,15 @@ static struct dentry *mfs_lookup(struct inode *dir, struct dentry *dentry, unsig
 	return NULL;
 }
 
+static int mfs_unlink(struct inode *dir, struct dentry *dentry) {
+	printk(KERN_EMERG "MicroFS:: Calling %s :  looking for inode %lu: dir name : %s", __func__, dir->i_ino, dentry->d_name.name);
+	dump_stack();
+	return 0;
+}
 const struct inode_operations mfs_dir_inops = {
 	.create			= mfs_create,
 	.lookup			= mfs_lookup,
 	//.link			= mfs_link,
-	//.unlink		= mfs_unlink,
+	.unlink			= mfs_unlink,
 	//.rename		= mfs_rename,
 };

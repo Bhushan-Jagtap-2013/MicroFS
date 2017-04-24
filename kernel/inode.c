@@ -115,6 +115,29 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	return inode;
 }
 
+/* 
+ * Get first free inode to allocate new indoe
+ */
+
+int get_inode_number(struct super_block *sb) {
+	struct buffer_head	*bh;
+	struct mfs_inode_map	*mfs_map;
+	int 			i;
+
+	bh = sb_bread(sb, INODE_MAP_BLK);
+	mfs_map = (struct mfs_inode_map *)bh->b_data;
+	for(i = 0; i < MFS_MAX_NUM_INODE; i++) {
+		if(mfs_map->map[i] == UNUSED) {
+			mfs_map->map[i] = USED;
+			mark_buffer_dirty(bh);
+			brelse(bh);
+			return i;
+		}
+	}	
+	brelse(bh);
+	return -1;
+}
+
 /*
  * mfs_alloc_inode will be called to get in-memory inode from get_locked.
  */

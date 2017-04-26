@@ -8,6 +8,8 @@
 extern const struct file_operations mfs_dir_ops;
 extern const struct inode_operations mfs_dir_inops;
 extern struct kmem_cache *mfs_inode_cachep;
+extern inline struct mfs_inode_info *GET_MFS_INODE(struct inode *);
+
 
 /*
  * GET_MFS_INODE will return mfs_inode_info structure pointer by encapsulating linux inode structure
@@ -43,8 +45,8 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 	unsigned long		block, offset;
 	int			i;
 
+	printk(KERN_EMERG "MicroFS:: %s", __func__);
 	inode = iget_locked(sb, ino);
-	printk(KERN_EMERG "MicroFS : %s : 2 : inode reading : %lu ", __func__ ,inode->i_ino);
 	dump_stack();
 	if (!inode) {
 		return ERR_PTR(-ENOMEM);
@@ -64,8 +66,6 @@ struct inode *mfs_iget(struct super_block *sb, unsigned long ino)
 
 	block = (ino / 4) + MFS_ILIST_START_BLOCK_NUM;
 	offset = ino % 4;
-
-	printk(KERN_EMERG "MicroFS : iget2 : inode reading : %lu : block + offset %lu %lu", inode->i_ino, block, offset);
 
 	/*
 	 * Read inode from disk and copy in in-memory inode.
@@ -124,6 +124,7 @@ int get_inode_number(struct super_block *sb) {
 	struct mfs_inode_map	*mfs_map;
 	int 			i;
 
+	printk(KERN_EMERG "MicroFS:: %s", __func__);
 	bh = sb_bread(sb, INODE_MAP_BLK);
 	mfs_map = (struct mfs_inode_map *)bh->b_data;
 	for(i = 0; i < MFS_MAX_NUM_INODE; i++) {
@@ -144,6 +145,8 @@ int get_inode_number(struct super_block *sb) {
 
 struct inode *mfs_alloc_inode(struct super_block *sb) {
 	struct mfs_inode_info	*im_inode;
+
+	printk(KERN_EMERG "MicroFS:: %s", __func__);
 
 	/*
 	 * get inode from slab
@@ -187,10 +190,53 @@ int mfs_drop_inode(struct inode *inode) {
 }
 
 void mfs_evict_inode(struct inode *inode) {
+	struct buffer_head		*bh;
+	struct mfs_super_block_info	*msbi;
+	struct super_block		*sb = inode->i_sb;
+	struct mfs_inode		*minode;
+	struct mfs_inode_map		*mfs_map;
+	unsigned long			block, offset;
+	int				ino = inode->i_ino;
+
+	printk(KERN_EMERG "MicroFS:: %s", __func__);
+        truncate_inode_pages_final(&inode->i_data);
+        invalidate_inode_buffers(inode);
+        clear_inode(inode);
+        if (inode->i_nlink) {
+                return;
+	}
 
 	/*
-	 * ToDo : Provide implementation
+	 * find and clear corresponding inode from device
 	 */
 
-	printk(KERN_EMERG "MicroFS:: Implementation for %s is not provided", __func__);
+	block = (ino / 4) + MFS_ILIST_START_BLOCK_NUM;
+	offset = ino % 4;
+	bh = sb_bread(sb, block);
+	minode = (struct mfs_inode *) bh->b_data;
+	minode += offset;
+	memset(minode, 0, sizeof(struct mfs_inode));
+	mark_buffer_dirty(bh);
+	brelse(bh);
+
+	/*
+	 * increase inode free count
+	 */
+
+	msbi = sb->s_fs_info;
+	msbi->sbi_msb->msb_n_free_inode++;
+
+	/*
+	 * ToDo: take care of reducing msb_n_free_blks, while implementing regular files
+	 */
+
+	/*
+	 * mark inode free
+	 */
+
+	bh = sb_bread(sb, INODE_MAP_BLK);
+	mfs_map = (struct mfs_inode_map *)bh->b_data;
+	mfs_map->map[ino] = UNUSED;
+	mark_buffer_dirty(bh);
+	brelse(bh);
 }

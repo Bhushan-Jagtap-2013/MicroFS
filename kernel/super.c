@@ -40,7 +40,7 @@ static const struct super_operations mfs_sops = {
 	.destroy_inode	= mfs_destroy_inode,
 	.write_inode	= mfs_write_inode,
 	//.drop_inode	= mfs_drop_inode,
-	//.evict_inode	= mfs_evict_inode,
+	.evict_inode	= mfs_evict_inode,
 	.put_super	= mfs_put_super,
 	.statfs		= mfs_statfs,
 };
@@ -57,6 +57,7 @@ int mfs_fill_super(struct super_block *sb, void *data, int silent) {
 	struct inode			*root;
 	int				ret = -EINVAL;
 
+	printk(KERN_EMERG "MicroFS:: %s", __func__);
 	printk(KERN_EMERG "MicroFS:: Mounting file system");
 	dump_stack();
 

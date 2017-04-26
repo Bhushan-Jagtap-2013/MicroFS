@@ -41,6 +41,7 @@ static void init_once(void *foo)
 {
 	struct mfs_inode_info *im_minode = foo;
 
+	printk(KERN_EMERG "MicroFS:: %s", __func__);
 	/*
 	 * initialize default fields of inode
 	 */
@@ -51,6 +52,7 @@ static void init_once(void *foo)
 static int __init mfs_register(void) {
 	int err;
 
+	printk(KERN_EMERG "MicroFS:: %s", __func__);
 	/*
 	 * create slap for storing in memory inode
 	 */

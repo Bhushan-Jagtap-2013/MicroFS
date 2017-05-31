@@ -8,3 +8,5 @@
 3. it will create module mfs.ko
 4. insert it in kernel using "insmod mfs.ko"
 5. remove module from kernel using "rmmod mfs.ko"
+
+[Link to project Report](https://github.com/Bhushan-Jagtap-2013/MicroFS/blob/master/Project_Report.pdf)

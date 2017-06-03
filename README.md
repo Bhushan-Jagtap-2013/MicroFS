@@ -22,3 +22,7 @@
 4. Allows creation and removal of up to 1024 files
 5. Maintains time of creation, deletion and modification of files
 6. Supports access permissions (Read - Write - Execute - owner)
+
+ToDo:
+
+1. File read and write operations
